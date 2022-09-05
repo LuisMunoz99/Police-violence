@@ -18,7 +18,7 @@ p_load(dplyr, here, flextable)
 
 
 files <- list(input = here::here("eco_analysis/cleaning_data/output/clean_census_csv"),
-              output = here::here("eco_analysis/cleaning_data/output/mortality_rates_LPM.pdf"))
+              output = here::here("eco_analysis/mortality_rates/output/mortality_rates_LPM.pdf"))
 
 
 # Function ---------------------------------------------------------------------
