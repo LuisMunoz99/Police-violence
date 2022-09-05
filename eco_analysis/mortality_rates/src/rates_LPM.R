@@ -7,7 +7,8 @@
 #
 # Autor:  LMN 
 # Fecha:  28-10-2021
-# Organizacion: Kilometro Cero 
+# Organizacion: Kilometro Cero  
+# src path: ~git/Police-Violence/eco_analysis/mortality_rates/src/rates_LPM.R
 
 
 # Set up ----------------------------------------------------------------------
