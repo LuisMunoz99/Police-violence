@@ -18,8 +18,8 @@ if(!require(pacman))install.packages("pacman")
 p_load(dplyr, here, flextable)
 
 
-files <- list(input = here::here("eco_analysis/cleaning_data/output/clean_census_csv"),
-              output = here::here("eco_analysis/mortality_rates/output/mortality_rates_LPM.pdf"))
+files <- list(input = here::here("lethal_uf/eco_analysis/cleaning_data/output/clean_census_csv"),
+              output = here::here("lethal_uf/eco_analysis/mortality_rates/output/mortality_rates_LPM.pdf"))
 
 
 # Function ---------------------------------------------------------------------
