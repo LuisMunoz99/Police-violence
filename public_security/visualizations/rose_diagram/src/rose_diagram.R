@@ -1,12 +1,12 @@
 # Introduction ------------------------------------------------------------------------------
 # 
-# Cleaninga petal diagram to present the duration of curfuews across time
+# Cleaning petal diagram to present the duration of curfuews across time
 # since the start of covid19 pandemic.
 #
 #
-# Autor:  LMN 
-# Fecha:  28-10-2021
-# Organizacion: Kilometro Cero 
+# Author:  LMN 
+# Date:  15-09-2022
+# Organization: Kilometro Cero 
 
 # Set up ----------------------------------------------------------------------
 
@@ -14,219 +14,144 @@
 
 #Load packages
 if(!require(pacman))install.packages("pacman")
-p_load(dplyr, here, readr, lubridate, ggplot2)
+p_load(dplyr, here, readr, lubridate, ggplot2, googlesheets4)
 
 
-files <- list(input = ("public_security/visualizations/rose_diagram/input/toques_queda.csv"), #Tengo que cambiarlo 
+files <- list(input = ("1jtAk5Fdm7GLDtcmSiFseDKPgfazQAqAd0EVQ9dWjSYQ"), #Tengo que cambiarlo 
               output = here::here("public_security/visualizations/rose_diagram/output/rose_diag.pdf"))
             
-
-              
-
+#Modificar a que no sea por google docs eso no brega
 
 # Import data -------------------------------------------------------------------
-df_orig <- read_csv(files$input,
-               col_types = cols(.default = "c", hour_start = "t", hour_finish = "t",
-                                '#' = "f", hour_duration = "n"))
-
-df_months <- data.frame(month_num = c("01-20", "02-20","03-20","04-20","05-20","06-20",
-                                      "07-20","08-20","09-20","10-20","11-20","12-20",
-                                      "01-21","02-21","03-21","04-21","05-21"),
-                        month_span = c("ene-20", "feb-20","mar-20","abr-20","may-20","jun-20",
-                                         "jul-20","ago-20","sep-20","oct-20","nov-20","dic-20",
-                                         "ene-21","feb-21","mar-21","abr-21","may-21"))
-
-
+df_orig <- read_sheet(files$input,
+                      col_types = "dcDcttnn") #Col types format for googlesheets 
 
 
 # Cleaning
-df <- df_orig[1:7] 
+df <- df_orig
 
-df <- df %>% mutate(date_start = as.Date(date_start, "%m/%d/%y"),
-                    hour_start = format(strptime(hour_start, "%H:%M:%S"), "%I:%M %p"), # Changing 24hrs format to 12hrs
-                    month_start = format(date_start, "%m-%y"),
-                    month_abr = format(date_start, "%m-%y", label = TRUE),
-                    hour_free = 24 - hour_duration) %>% 
-  left_join(df_months, by = c("month_start" = "month_num"))
+df <- df %>% mutate(hour_start = format(strptime(hour_start, "%Y-%m-%d %H:%M:%S"), "%I:%M %p")) # Changing 24hrs format to 12hrs
 
-months_6 <- df %>% filter(date_start >= "2020-03-15" & date_start <= "2020-09-21")
-months_12 <- df %>% filter(date_start > "2020-09-21")
+                    
+
 
 # Visualization ----------------------------------------------------------------
 
-# Tienen que haber unas categorias para ubicarlas en lugar (los meses)
 
-months_abr <- df_months$month_abr
-
-
-
-
-
-
-df_hour <- data.frame(value = 2:7,
-                      hour_start_label = c("7:00 pm","8:00 pm","9:00 pm",
-                                           "10:00 pm","11:00 pm","12:00 am"))
+#df_hour <- data.frame(value = 1:12,
+                      #hour_start_label = c("1:00 pm","2:00 pm","3:00 pm",
+                                           #"4:00 pm","5:00 pm","6:00 ",
+                                           #"7:00 pm","8:00 pm","9:00 pm",
+                                           #"10:00 pm","11:00 pm","12:00 am"))
+# Tengo que crear un script de los inicios de este banco de datos donde cree este df_hour para asignar el label, esto no vino con el banco
+# Solo tenia las ordenes ejecutivas sin el label eso lo cree. Mentira no tenia la escala 
 
 
 
-pdf(files$output)
-# No labels no lines 
+# Labels (SEP-21-22)
 
-# First semester
-months_6 %>%
-  left_join(df_hour, by = "hour_start_label") %>% ggplot(aes(exxecutive_order, value)) + 
-  geom_col(aes(fill = exxecutive_order), width = 1, position = "identity", 
-           fill = "white", color = "black", size = .25) + 
-  coord_polar() +
-  scale_y_sqrt() +
+df %>% ggplot(aes(executive_order, scale)) + 
+  geom_col(aes(x = executive_order), width = .8, position = "identity", 
+           fill = "white", color = "black", size = .25) + # Polar coordinates 
+  #scale_y_sqrt() + not required i think
   theme_void() +
-  theme(axis.text.x = element_text(size = 9),
-        strip.text = element_text(size = 11),
+  geom_text(aes(label = hour_start_label), vjust = 0.8, hjust = 0.5, colour = "black") + #Hour label 
+  theme(axis.text.x = element_blank(),
         legend.position = "none",
         plot.background = element_rect(fill = alpha("white", 0.5)),
-        plot.margin = unit(c(15, 15, 15, 15), "pt"),
-        plot.title = element_text(vjust = 5)) +
-  ggtitle("Curfews first 6 months (No labels)")
+        plot.margin = unit(c(5, 5, 5, 5), "pt"),
+        plot.title = element_text(vjust = 5)) + 
+  ylim(-2,13) + # Space within circle
+  #geom_segment(aes(x, y, xend = xend, yend = yend, colour = "curve")) +
+  #geom_segment(aes(x = 12, y = 13, xend = 0, yend = 13, colour = "curve")) +
+  # Verify grid:: to verify parameters of the curve in polar diagrams 
+  coord_polar() +
 
+            
+  geom_vline(xintercept = c(0.4, 7.4, 16.6)) 
+
+
+#+
+
+  #geom_text(aes(.56, 4.1, label = "- 9")) +
+  #geom_text(aes(.578, 5.1, label = "- 10")) +
+  #geom_text(aes(.575, 6.1, label = "- 11")) +
+  #geom_text(aes(.57, 7.1, label = "- 12"))
+  #ggtitle("Curfews first 6 months (Hours labels)")
+
+# Test
+  main <- df %>% ggplot(aes(executive_order, scale)) +
+    geom_segment(
+      aes(x = executive_order, xend = executive_order, y = 0, yend = scale), 
+      size = 1.2
+    ) +
+    # This rect is converted into the inner circle where we're going to place text
+    # when converting the plot to circular coordinates.
+    geom_rect(
+      aes(xmin = 1, xmax = 501, ymin = 0, ymax = plus), 
+      fill = "grey97", color = "grey97"
+    ) + 
+    
+    # Add our custom grid lines for the radial axis.
+    # These lines indicate one day, one week, one month and one year.
+    geom_hline(aes(yintercept = 9, color = "grey88")) +
+    geom_hline(aes(yintercept = 10, color = "grey85")) +
+    geom_hline(aes(yintercept = 11, color = "grey82")) +
+    geom_hline(aes(yintercept = 12, color = "grey79")) +
+  
+    
+    # Polar axis (y-axis) is in log10 scale
+    scale_y_sqrt(expand = c(0, 0)) +
+    
+    
+    # Make it circular!
+    coord_polar() 
+  
+  main
+  
+  
+  
+  
+  
+  
 # Second semester
 months_12 %>%
-  left_join(df_hour, by = "hour_start_label") %>% ggplot(aes(exxecutive_order, value)) + 
+  left_join(df_hour, by = "hour_start_label") %>% 
+  ggplot(aes(exxecutive_order, value)) + 
   geom_col(aes(fill = exxecutive_order), width = 1, position = "identity", 
            fill = "white", color = "black", size = .25) + 
   coord_polar() +
+  geom_text(aes(label = hour_start_label), vjust = 0, hjust = 0, colour = "black") +
   scale_y_sqrt() +
   theme_void() +
-  theme(axis.text.x = element_text(size = 9),
-        strip.text = element_text(size = 11),
+  theme(axis.text.x = element_blank(),
         legend.position = "none",
-        plot.background = element_rect(fill = alpha("white", 0.5)),
+        plot.background = element_rect(fill = alpha("#EDDCD2", 0.5)),
         plot.margin = unit(c(15, 15, 15, 15), "pt"),
         plot.title = element_text(vjust = 5)) +
-  ggtitle("Curfews last 6 months (No labels)") 
-
-# All months 
-df %>%
-  left_join(df_hour, by = "hour_start_label") %>% ggplot(aes(exxecutive_order, value)) + 
-  geom_col(aes(fill = exxecutive_order), width = 1, position = "identity", 
-           fill = "white", color = "black", size = .25) + 
-  coord_polar() +
-  scale_y_sqrt() +
-  theme_void() + 
-  theme(axis.text.x = element_text(size = 9),
-        strip.text = element_text(size = 11),
-        legend.position = "none",
-        plot.background = element_rect(fill = alpha("white", 0.5)),
-        plot.margin = unit(c(15, 15, 15, 15), "pt"),
-        plot.title = element_text(vjust = 5)) +
-  ggtitle("Curfews all months (No labels)")
-
-# Labels 
-months_6 %>%
-  left_join(df_hour, by = "hour_start_label") %>% ggplot(aes(exxecutive_order, value)) + 
-  geom_col(aes(fill = exxecutive_order), width = 1, position = "identity", 
-           fill = "white", color = "black", size = .25) + 
-  coord_polar() +
-  scale_y_sqrt() +
-  theme_void() +
-  geom_text(aes(label = hour_start_label), vjust = 0.8, hjust = 0.5, colour = "black") +
-  theme(axis.text.x = element_text(size = 9),
-        strip.text = element_text(size = 11),
-        legend.position = "none",
-        plot.background = element_rect(fill = alpha("white", 0.5)),
-        plot.margin = unit(c(15, 15, 15, 15), "pt"),
-        plot.title = element_text(vjust = 5)) +
-  ggtitle("Curfews first 6 months (Hours labels)")
-
-# Second semester
-months_12 %>%
-  left_join(df_hour, by = "hour_start_label") %>% ggplot(aes(exxecutive_order, value)) + 
-  geom_col(aes(fill = exxecutive_order), width = 1, position = "identity", 
-           fill = "white", color = "black", size = .25) + 
-  coord_polar() +
-  geom_text(aes(label = hour_start_label), vjust = 0.8, hjust = 0.5, colour = "black") +
-  scale_y_sqrt() +
-  theme_void() +
-  theme(axis.text.x = element_text(size = 9),
-        strip.text = element_text(size = 11),
-        legend.position = "none",
-        plot.background = element_rect(fill = alpha("white", 0.5)),
-        plot.margin = unit(c(15, 15, 15, 15), "pt"),
-        plot.title = element_text(vjust = 5)) +
+  geom_vline(xintercept = 4.5) +
+  geom_vline(xintercept = 7.5) +
+  geom_vline(xintercept = .5) +
+  geom_text(aes(.56, 4, label = "- 9")) +
+  geom_text(aes(.578, 5, label = "- 10")) +
+  geom_text(aes(.575, 6, label = "- 11")) +
+  geom_text(aes(.57, 7, label = "- 12"))
   ggtitle("Curfews last 6 months (Hours labels)") 
 
 
+# 2 = 7:00 pm
+# 3 = 8:00 pm
+# 4 = 9:00 pm
+# 5 = 10:00 pm
+# 6 = 11:00 pm
+# 7 = 12:00 pm
 
 
 
-df %>%
-  left_join(df_hour, by = "hour_start_label") %>% ggplot(aes(exxecutive_order, value)) + 
-  geom_col(aes(fill = exxecutive_order), width = 1, position = "identity", 
-           fill = "white", color = "black", size = .25) + 
-  coord_polar() +
-  geom_text(aes(label = hour_start_label), vjust = 0.8, hjust = 0.5, colour = "black") +
-  scale_y_sqrt() +
-  theme_void() +
-  theme(axis.text.x = element_text(size = 9),
-        strip.text = element_text(size = 11),
-        legend.position = "none",
-        plot.background = element_rect(fill = alpha("white", 0.5)),
-        plot.margin = unit(c(15, 15, 15, 15), "pt"),
-        plot.title = element_text(vjust = 5)) +
-  ggtitle("Curfews all months (Hours labels)")
-
-
-# Reference lines
-months_6 %>%
-  left_join(df_hour, by = "hour_start_label") %>% ggplot(aes(exxecutive_order, value)) + 
-  geom_col(aes(fill = exxecutive_order), width = 1, position = "identity", 
-           fill = "white", color = "black", size = .25) + 
-  coord_polar() +
-  scale_y_sqrt() +
-  theme_void() + 
-  geom_hline(aes(yintercept = value)) + 
-  theme(axis.text.x = element_text(size = 9),
-        strip.text = element_text(size = 11),
-        legend.position = "none",
-        plot.background = element_rect(fill = alpha("white", 0.5)),
-        plot.margin = unit(c(15, 15, 15, 15), "pt"),
-        plot.title = element_text(vjust = 5)) +
-  ggtitle("Curfews first 6 months (Reference lines)")
-
-# Second semester
-months_12 %>%
-  left_join(df_hour, by = "hour_start_label") %>% ggplot(aes(exxecutive_order, value)) + 
-  geom_col(aes(fill = exxecutive_order), width = 1, position = "identity", 
-           fill = "white", color = "black", size = .25) + 
-  coord_polar() + geom_hline(aes(yintercept = value)) + 
-  scale_y_sqrt() +
-  theme_void() +
-  theme(axis.text.x = element_text(size = 9),
-        strip.text = element_text(size = 11),
-        legend.position = "none",
-        plot.background = element_rect(fill = alpha("white", 0.5)),
-        plot.margin = unit(c(15, 15, 15, 15), "pt"),
-        plot.title = element_text(vjust = 5)) +
-  ggtitle("Curfews last 6 months (Reference lines)")
-
-
-
-
-
-df %>%
-  left_join(df_hour, by = "hour_start_label") %>% ggplot(aes(exxecutive_order, value)) + 
-  geom_col(aes(fill = exxecutive_order), width = 1, position = "identity", 
-           fill = "white", color = "black", size = .25) + 
-  coord_polar() +
-  scale_y_sqrt() +
-  theme_void() + geom_hline(aes(yintercept = value)) + 
-  theme(axis.text.x = element_text(size = 9),
-        strip.text = element_text(size = 11),
-        legend.position = "none",
-        plot.background = element_rect(fill = alpha("white", 0.5)),
-        plot.margin = unit(c(15, 15, 15, 15), "pt"),
-        plot.title = element_text(vjust = 5)) +
-  ggtitle("Curfews all months (Reference lines)")
 
 
 dev.off() 
 
+
+
+write.xlsx(x,"/Users/luismunoz/Documents/Documents MacBook Air/git/Police-Violence/toques_queda.xl")
