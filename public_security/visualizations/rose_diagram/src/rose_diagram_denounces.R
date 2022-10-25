@@ -24,14 +24,12 @@ files <- list(input = ("1jtAk5Fdm7GLDtcmSiFseDKPgfazQAqAd0EVQ9dWjSYQ"), #Tengo q
 # Import data 
 df_orig <- read_sheet(files$input,
                       col_types = "dcDcDnttnnnnc",
-                      sheet = 2) #Col types format for googlesheets 
+                      sheet = 3) #Col types format for googlesheets 
 
 
 
 # Cleaning
 df <- df_orig
-#df <- df %>% mutate(arrest_day = ifelse(arrest_day < 2.9,2.5,arrest_day)) #Luego mejorar eso 
-#df$arrest_day <- round(df$arrest_day, 0)
 
 
 # Labels for plot
@@ -43,9 +41,12 @@ label_df$angle <- 90 - 360 * (label_df$`#`- 0.5) /nrow(label_df) # I substract 0
 
 
 
-label_df <- label_df %>% mutate(hjust = ifelse( label_df$angle < -90, 1, 0), # calculate the alignment of labels: right or left
+label_df <- label_df %>% mutate(hjust = ifelse( label_df$angle < -90, .3, 0), # calculate the alignment of labels: right or left
+                                # Puedo arreglar esto con un case_when en donde los valores menores a tal y con un grado -90 esten en cierto lado poner la justificacion como me de la gana
                                 angle = ifelse(label_df$angle < -90, label_df$angle+180, label_df$angle))
 
+#label_df <- label_df %>% mutate(ifelse(mutate <= 5))
+# options(repr.plot.width = 2, repr.plot.height =3)
 
 # Base plot
 
@@ -54,20 +55,19 @@ plt <- ggplot(df) +
   # Make reference circles
   geom_hline(aes(
     yintercept = y), 
-    data.frame(y = c(3,5,10,20,30)), # Add hline within spaces 7-12 
+    data.frame(y = c(5,10,20,30,40,50)), # Add hline within spaces 7-12 
     color = "black",
     alpha = .3) + 
   
   # Creating columns 
   geom_col(aes(
     x = executive_order,
-    y = change_arrest),
+    y = change_denounce),
     position = "dodge2",
     show.legend = TRUE,
     width = .8,
     fill = "#FFAF3A",
     color = "black") +
-  y_contin
   
   
   # Creating space in middle by expanding Y axis
@@ -82,47 +82,31 @@ plt <- ggplot(df) +
   # Polar coordinates (circular plot)
   coord_polar() +
   
-  # Labels
+  # Labels of executive orders
   geom_text(data = label_df, aes(
     x = executive_order,
-    y = change_arrest + 4, 
+    y = change_denounce + 4, 
     label = date_start_label,
     hjust = hjust), 
     color ="#444444", 
     size = 2.5, 
     angle = label_df$angle,
     inherit.aes = FALSE) +
-
-
+  
   # Labels of values
   geom_text(data = label_df, aes(
     x = executive_order,
-    y = change_arrest, 
-    label = label_change_arrest,
+    y = change_denounce, 
+    label = label_change_denounce,
     hjust = 2), # Esto me deja poner el label dentro de la grafica
     color = "#444444", 
     size = 4.5, 
     angle = label_df$angle,
     inherit.aes = FALSE,
-  )
-  # reference scale labels 2,3,5,10,30
-plt <- plt + annotate(
-    x = 1, 
-    y = 3.6, 
-    label = paste("menos ","de 3",sep = "\n"), 
-    geom = "text", 
-    color = "#444444",
-    fontface = "bold",
-    size = 3
-  ) + 
-  annotate(
-    x = 1, 
-    y = 5, 
-    label = "5", 
-    geom = "text", 
-    color = "#444444",
-    fontface = "bold"
-  ) +
+    ) +
+  
+  
+  # reference scale labels
   annotate(
     x = 1, 
     y = 10, 
@@ -130,13 +114,14 @@ plt <- plt + annotate(
     geom = "text", 
     color = "#444444",
     fontface = "bold"
-  ) +  
+  ) +
   annotate(
     x = 1, 
     y = 20, 
     label = "20", 
     geom = "text", 
-    fontface = "bold",
+    color = "#444444",
+    fontface = "bold"
   ) + 
   annotate(
     x = 1, 
@@ -144,10 +129,32 @@ plt <- plt + annotate(
     label = "30", 
     geom = "text", 
     fontface = "bold",
-  ) 
-
-
-
+  ) +
+  annotate(
+    x = 1, 
+    y = 6, 
+    label = paste( "menos ","de 5",sep = "\n"), 
+    geom = "text", 
+    color = "black",
+    fontface = "bold",
+    size = 3
+  ) + 
+  annotate(
+    x = 1,
+    y = 40, 
+    label = "40", 
+    geom = "text", 
+    color = "#444444",
+    fontface = "bold",
+  ) +
+  annotate(
+    x = 1,
+    y = 50, 
+    label = "50", 
+    geom = "text", 
+    color = "#444444",
+    fontface = "bold"
+  )
 
 
 
@@ -155,10 +162,10 @@ plt <- plt + annotate(
 # Add titles 
 #plt <- plt + labs(
  # title = "\nToque de queda",
-  #subtitle = paste(
-   # "\nEste diagrama de rosa se presenta la hora de cierre que,",
-    #"establecio cada orden ejecutiva\n",
-    #sep = "\n"),
+ # subtitle = paste(
+  #  "\nEste diagrama de rosa se presenta la hora de cierre que,",
+   # "establecio cada orden ejecutiva\n",
+   # sep = "\n"),
   #x = "",
   #y = "",
   #caption = "\nFuente: Ordenes ejecutivas") +
@@ -168,7 +175,7 @@ plt <- plt + annotate(
   # Formating
   
   # Make the background white and remove extra grid lines
-  plt <- plt + theme(
+plt <- plt + theme(
     panel.background = element_rect(fill = "white", color = "white"),
     panel.grid = element_blank(),
     axis.text.x = element_blank(),

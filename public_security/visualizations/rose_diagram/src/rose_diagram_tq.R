@@ -1,4 +1,4 @@
-# Original script
+# Este es un invento
 
 
 #Load packages
@@ -14,7 +14,7 @@ files <- list(input = ("1jtAk5Fdm7GLDtcmSiFseDKPgfazQAqAd0EVQ9dWjSYQ"), #Tengo q
 # Import data 
 df_orig <- read_sheet(files$input,
                       col_types = "dcDcttnn",
-                      sheet = 1) #Col types format for googlesheets 
+                      sheet = 1) # Col types format for googlesheets 
 
 
 # Cleaning
@@ -47,124 +47,74 @@ plt <- ggplot(df) +
   geom_hline(aes(
     yintercept = y), 
     data.frame(y = c(7:12)), # Add hline within spaces 7-12 
-    color = "black",
-    alpha = .3) + 
-  
+    color = "#444444",
+    alpha = .2) + 
+
   # Creating columns 
   geom_col(aes(
-    x = executive_order,
-    y = scale),
+      x = executive_order,
+      y = scale),
     position = "dodge2",
     show.legend = TRUE,
     width = .8,
     fill = "#FFAF3A",
     color = "black") +
-  
+
   
   # Creating space in middle by expanding Y axis
   scale_y_continuous(
-    limits = c(-1, 12),
-    expand = c(0, 0),
+    limits = c(0, 20),
     breaks = c(7:12)) +
   
-  
+
   # Polar coordinates (circular plot)
   coord_polar() +
   
   # Labels
   geom_text(data = label_df, aes(
     x = executive_order,
-    y = arrest_day + .5, 
-    label = start,
+    y = scale + .5, 
+    label = date_start_label,
     hjust = hjust), 
-    color ="black", 
-    size = 4, 
+    color ="#444444", 
+    size = 2.5, 
     angle = label_df$angle,
-    inherit.aes = FALSE) +
+    inherit.aes = FALSE) 
+
   
-  
-  # reference scale labels
-  annotate(
-    x = 9,
-    y = 7, 
-    label = "7 pm", 
-    geom = "text", 
-    color = "gray12",
-    angle = 45
-  ) +
-  annotate(
-    x = 9, 
+   #reference scale labels
+plt <- plt + annotate(
+    x = c(27,8,20),
     y = 8, 
     label = "8 pm", 
     geom = "text", 
-    color = "gray12",
-    angle = 45
-  ) +
+    color = "#444444",
+  size = 2.5) +
+  
+    annotate(
+      x = c(27,8,20),
+      y = 10, 
+      label = "10 pm", 
+      geom = "text", 
+      color = "#444444",
+    size = 2.5) +
+
+  #) +
   annotate(
-    x = 9, 
-    y = 9, 
-    label = "9 pm", 
-    geom = "text", 
-    color = "gray12",
-    angle = 45
-  ) +
-  annotate(
-    x = 9, 
-    y = 10, 
-    label = "10 pm", 
-    geom = "text", 
-    color = "gray12",
-    angle = 45
-  ) +
-  annotate(
-    x = 9, 
-    y = 11, 
-    label = "11 pm", 
-    geom = "text", 
-    color = "gray12",
-    angle = 45
-  ) +
-  annotate(
-    x = 9, 
+    x = c(27,8,20),
     y = 12, 
     label = "12 pm", 
     geom = "text", 
-    color = "gray12",
-    angle = 45
-  ) 
+    color = "#444444",
+  size = 2.5) 
 
 
+# Formating 
+plt <- plt + theme(
+  panel.background = element_rect(fill = "white", color = "white"),
+  panel.grid = element_blank(),
+  axis.text.x = element_blank())
+  
 plt
 
-
-
-
-# Add titles 
-plt <- plt + labs(
-  title = "\nToque de queda",
-  subtitle = paste(
-    "\nEste diagrama de rosa se presenta la hora de cierre que,",
-    "establecio cada orden ejecutiva\n",
-    sep = "\n"),
-  x = "",
-  y = "",
-  caption = "\nFuente: Ordenes ejecutivas") +
-  
-  
-  # Customize general theme
-  # Formating
-  
-  # Make the background white and remove extra grid lines
-  theme(
-    panel.background = element_rect(fill = "white", color = "white"),
-    panel.grid = element_blank(),
-    axis.text.x = element_blank(),
-    text = element_text(color = "black"),  # Set default color
-    
-    # Customize the text in the title, subtitle, and caption
-    plot.title = element_text(size = 13, hjust = 0.05),
-    plot.subtitle = element_text(size = 11, hjust = .5),
-    plot.caption = element_text(size = 7, hjust = .5))
-
-plt
-ggsave("plot.png", plt,width=9, height=12.6)
+#ggsave("plot.png", plt,width=9, height=12.6)
