@@ -1,7 +1,7 @@
 # Introduction ------------------------------------------------------------------------------
 # 
 # Cleaning petal diagram to present amount of police arrest and 
-# denounces across executive order.
+# arrests across executive order.
 # since the start of covid19 pandemic.
 #
 #
@@ -24,7 +24,7 @@ files <- list(input = ("1jtAk5Fdm7GLDtcmSiFseDKPgfazQAqAd0EVQ9dWjSYQ"), #Tengo q
 # Import data 
 df_orig <- read_sheet(files$input,
                       col_types = "dcDcDnttnnnnc",
-                      sheet = 2) #Col types format for googlesheets 
+                      sheet = 4) #Col types format for googlesheets 
 
 
 
@@ -43,10 +43,17 @@ label_df$angle <- 90 - 360 * (label_df$`#`- 0.5) /nrow(label_df) # I substract 0
 
 
 
-label_df <- label_df %>% mutate(hjust = ifelse( label_df$angle < -90, 1, 0), # calculate the alignment of labels: right or left
-                                angle = ifelse(label_df$angle < -90, label_df$angle+180, label_df$angle))
-
-
+label_df <- label_df %>% mutate(
+  change_arrest = round(change_arrest, 0),
+  hjust = case_when(
+    change_arrest <= 3 & angle <= -100 ~ .4, 
+    change_arrest <= 3 & angle > -100 ~ 0.7, 
+    change_arrest == 5 ~ .6, # DONE
+    change_arrest == 31 ~ -0.03, # DONE 
+    change_arrest == 11 ~ 0.2, # DONE 
+    TRUE ~ 1),
+  angle = ifelse(
+    label_df$angle < -90, label_df$angle+180, label_df$angle))
 # Base plot
 
 plt <- ggplot(df) +
@@ -67,7 +74,6 @@ plt <- ggplot(df) +
     width = .8,
     fill = "#FFAF3A",
     color = "black") +
-  y_contin
   
   
   # Creating space in middle by expanding Y axis
@@ -89,7 +95,7 @@ plt <- ggplot(df) +
     label = date_start_label,
     hjust = hjust), 
     color ="#444444", 
-    size = 2.5, 
+    size = 5, 
     angle = label_df$angle,
     inherit.aes = FALSE) +
 
@@ -101,49 +107,54 @@ plt <- ggplot(df) +
     label = label_change_arrest,
     hjust = 2), # Esto me deja poner el label dentro de la grafica
     color = "#444444", 
-    size = 4.5, 
+    size = 8, 
     angle = label_df$angle,
     inherit.aes = FALSE,
+    fontface = "bold"
   )
   # reference scale labels 2,3,5,10,30
 plt <- plt + annotate(
     x = 1, 
-    y = 3.6, 
-    label = paste("menos ","de 3",sep = "\n"), 
+    y = 3, 
+    label = paste("<= 3",sep = "\n"), 
     geom = "text", 
     color = "#444444",
     fontface = "bold",
-    size = 3
+    size = 4
   ) + 
   annotate(
-    x = 1, 
+    x = c(1,9,17),
     y = 5, 
     label = "5", 
     geom = "text", 
     color = "#444444",
-    fontface = "bold"
+    fontface = "bold",
+    size = 6
   ) +
   annotate(
-    x = 1, 
+    x = c(1,9,17),
     y = 10, 
     label = "10", 
     geom = "text", 
     color = "#444444",
-    fontface = "bold"
+    fontface = "bold",
+    size = 6
   ) +  
   annotate(
-    x = 1, 
+    x = c(1,9,17),
     y = 20, 
     label = "20", 
     geom = "text", 
     fontface = "bold",
+    size = 6
   ) + 
   annotate(
-    x = 1, 
+    x = c(1,9,17),
     y = 30, 
     label = "30", 
     geom = "text", 
     fontface = "bold",
+    size = 6
   ) 
 
 

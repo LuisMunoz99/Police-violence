@@ -1,0 +1,37 @@
+---
+title: "The racial geography of lethal police use of force: Geocoding addresses"
+author: "Luis Muñoz"
+date: '2022-11-15'
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+```
+
+## R Markdown
+
+ Geocoding "lugar" variable from sample of level 4 use of force reports. 
+ 1. Expand and parse adresses using libpostal.
+ 2. Improve parsing
+ 3. Use rmapzen: Openworld API --> search, 
+     A. Search
+     B. String similarity - choose
+     C. mz_geocode - lat and long
+ 4. Use censusxy 
+     A. adapt addresses to USPS format
+     B. cxy_geocode
+
+```{r cars}
+summary(cars)
+```
+
+## Including Plots
+
+You can also embed plots, for example:
+
+```{r pressure, echo=FALSE}
+plot(pressure)
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.

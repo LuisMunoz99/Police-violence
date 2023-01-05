@@ -17,14 +17,14 @@ p_load(dplyr, here, readr, lubridate, ggplot2, googlesheets4)
 
 
 files <- list(input = ("1jtAk5Fdm7GLDtcmSiFseDKPgfazQAqAd0EVQ9dWjSYQ"), #Tengo que cambiarlo 
-              output = here::here("public_security/visualizations/rose_diagram/output/rose_diag_ad.pdf"))
+              output = here::here("public_security/visualizations/rose_diagram/output/rosediag_denounce.pdf"))
 
 # Modificar a que no sea por google docs eso no brega
 
 # Import data 
 df_orig <- read_sheet(files$input,
                       col_types = "dcDcDnttnnnnc",
-                      sheet = 3) #Col types format for googlesheets 
+                      sheet = 6) #Col types format for googlesheets 
 
 
 
@@ -41,9 +41,24 @@ label_df$angle <- 90 - 360 * (label_df$`#`- 0.5) /nrow(label_df) # I substract 0
 
 
 
-label_df <- label_df %>% mutate(hjust = ifelse( label_df$angle < -90, .3, 0), # calculate the alignment of labels: right or left
+#label_df <- label_df %>% mutate(hjust = ifelse( label_df$angle < -90, .2, 0), # calculate the alignment of labels: right or left
                                 # Puedo arreglar esto con un case_when en donde los valores menores a tal y con un grado -90 esten en cierto lado poner la justificacion como me de la gana
-                                angle = ifelse(label_df$angle < -90, label_df$angle+180, label_df$angle))
+                                #angle = ifelse(label_df$angle < -90, label_df$angle+180, label_df$angle))
+
+
+label_df <- label_df %>% mutate(
+  change_denounce = round(change_denounce, 0),
+  hjust = case_when(
+  change_denounce <= 5 & angle <= -100 ~ .7, #DONE 
+  change_denounce <= 5 & angle > -100 ~ .4, # DONE
+  change_denounce >= 35 ~ 0, 
+  change_denounce == 19 ~ 0.1, # DONE
+  change_denounce == 6 ~ .4, # DONE
+  change_denounce == 13 ~ .2 # DONE
+),
+  angle = ifelse(
+    label_df$angle < -90, label_df$angle+180, label_df$angle))
+    
 
 #label_df <- label_df %>% mutate(ifelse(mutate <= 5))
 # options(repr.plot.width = 2, repr.plot.height =3)
@@ -76,7 +91,7 @@ plt <- ggplot(df) +
   #expand = c(0, 0),
   #breaks = 3) +
   
-  scale_y_log10() + 
+  scale_y_log10() + # Express large variance between larga vs small numbers 
   
   
   # Polar coordinates (circular plot)
@@ -89,9 +104,10 @@ plt <- ggplot(df) +
     label = date_start_label,
     hjust = hjust), 
     color ="#444444", 
-    size = 2.5, 
+    size = 5, 
     angle = label_df$angle,
-    inherit.aes = FALSE) +
+    inherit.aes = FALSE
+    ) +
   
   # Labels of values
   geom_text(data = label_df, aes(
@@ -100,60 +116,66 @@ plt <- ggplot(df) +
     label = label_change_denounce,
     hjust = 2), # Esto me deja poner el label dentro de la grafica
     color = "#444444", 
-    size = 4.5, 
+    size = 8, 
     angle = label_df$angle,
     inherit.aes = FALSE,
+    fontface = "bold"
     ) +
   
   
   # reference scale labels
   annotate(
-    x = 1, 
+    x = c(1,8,18),
     y = 10, 
     label = "10", 
     geom = "text", 
     color = "#444444",
-    fontface = "bold"
+    fontface = "bold",
+    size = 4.5
   ) +
   annotate(
-    x = 1, 
+    x = c(1,8,18),
     y = 20, 
     label = "20", 
     geom = "text", 
     color = "#444444",
-    fontface = "bold"
+    fontface = "bold",
+    size = 4.5
   ) + 
   annotate(
-    x = 1, 
+    x = c(1,8,18),
     y = 30, 
     label = "30", 
     geom = "text", 
     fontface = "bold",
+    size = 4.5
   ) +
   annotate(
     x = 1, 
-    y = 6, 
-    label = paste( "menos ","de 5",sep = "\n"), 
+    y = 5, 
+    label = paste( "<= 5", sep = "\n"), 
     geom = "text", 
     color = "black",
     fontface = "bold",
-    size = 3
+    size = 4
   ) + 
   annotate(
-    x = 1,
+    x = c(1,8,18),
     y = 40, 
     label = "40", 
     geom = "text", 
     color = "#444444",
     fontface = "bold",
+    size = 4.5
   ) +
   annotate(
-    x = 1,
+    x = c(1,8,18),
     y = 50, 
     label = "50", 
     geom = "text", 
     color = "#444444",
-    fontface = "bold"
+    fontface = "bold",
+    size = 4.5
   )
 
 
@@ -176,10 +198,13 @@ plt <- ggplot(df) +
   
   # Make the background white and remove extra grid lines
 plt <- plt + theme(
-    panel.background = element_rect(fill = "white", color = "white"),
-    panel.grid = element_blank(),
-    axis.text.x = element_blank(),
-    text = element_text(color = "black"))
+  panel.background = element_rect(fill = "white", color = "white"),
+  panel.grid = element_blank(),
+  axis.text = element_blank(),
+  axis.title = element_blank(),
+  axis.ticks = element_blank(),
+  text = element_text(color = "#444444"))
+
 
   # Set default color
 
@@ -188,5 +213,9 @@ plt <- plt + theme(
 #plot.subtitle = element_text(size = 11, hjust = .5),
 #plot.caption = element_text(size = 7, hjust = .5))
 
+
 plt
+
+ggsave(files$output, plt, width=9, height=12.6)
+
 #ggsave("plot.png", plt,width=9, height=12.6)
