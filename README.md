@@ -10,7 +10,10 @@
 ### geocoding
 - **import** Symlink to working datasets.
 - **export-manual-geo**
-- **transforming-cords** - Source code for using the `sf` package.
+- **transform-coords**
+  - **import** manual-geo
+  - **export** measuring quintiles
+  
 
 ### Lpm
 - **import** Symlink to working datasets.
@@ -32,7 +35,7 @@
 - **import** Symlink to working datasets.
 - **geocode** Symlink to geocoded cords
   
-- **quintiles**
+- **measure-quintiles**
   - **import** PUMS data
   - **measure-quintiles** measuring quintiles
     
